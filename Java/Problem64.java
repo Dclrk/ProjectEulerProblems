@@ -1,0 +1,249 @@
+
+
+
+import java.util.*;
+
+public class Problem64 {
+    
+    
+    public static void main(String args[]){
+        
+        long startTime =  System.nanoTime();
+        
+        int period;
+        
+        int result = 0;
+        
+        int numGCD;
+        
+        int denGCD;
+        
+        int realGCD;
+        
+        int floor;
+        
+        ArrayList<String> Fractions = new ArrayList<>();
+        
+        String tempFrac;
+        
+
+        for(int i = 1; i < 14; i++){
+            
+            
+            
+            if(isPerfectSquare(i) || isPerfectSquare(i - 1) || isPerfectSquare(i + 1) || isPerfectSquare(i + 2) || isPerfectSquare(i - 2) || i % 4 == 0) {
+                
+                continue;
+                
+            }
+            
+            System.out.println(i);
+            
+            IntegerExtension Numerator = new IntegerExtension(-(int)Math.sqrt(i), 1, i);
+            
+            IntegerExtension Denominator = new IntegerExtension(1,0,i);
+            
+            IntegerExtension tempExtension;
+            
+            while(true){
+                
+                tempExtension = Denominator;
+                
+                Denominator = Numerator;
+                
+                Numerator = tempExtension;
+                
+                Numerator = Numerator.multiply(Denominator.getConjugate());
+                
+                Denominator = Denominator.multiply(Denominator.getConjugate());
+                
+
+                numGCD = gcd(Numerator.getIntegerPart(),Numerator.getProductPart());
+                
+                denGCD = gcd(Denominator.getIntegerPart(),Denominator.getProductPart());
+                
+                realGCD = gcd(numGCD,denGCD);
+                 
+                Numerator = Numerator.divide(realGCD);
+                
+                Denominator = Denominator.divide(realGCD);
+                
+                floor = Numerator.floor() / Denominator.getIntegerPart();
+                
+                Numerator = Numerator.subtract(floor * Denominator.getIntegerPart());
+                
+                tempFrac = Numerator.toString() + "/" + Denominator.toString();
+                
+                if(Fractions.contains(tempFrac)){
+                    
+                    period = Fractions.size() - Fractions.indexOf(tempFrac);
+                    
+                    break;
+                    
+                }
+                
+                Fractions.add(tempFrac);
+            }
+            
+            if(period % 2 == 1){
+               
+                result++;
+            }
+            
+
+        }
+        
+        System.out.println(result);
+        
+        
+        long finishTime = System.nanoTime();
+        
+        double timeinSeconds = (finishTime - startTime)/Math.pow(10, 9);
+        
+        System.out.println("Time: " + timeinSeconds + " seconds");
+        
+    }
+    
+    public static boolean isPerfectSquare(int i){
+
+        int root = (int) Math.sqrt(i);
+        
+        return root*root == i;
+    }
+    
+    public static class IntegerExtension{
+        
+        
+        public static final IntegerExtension ONE = new IntegerExtension(1,0,0);
+        
+        
+        
+        private final int i1; //Integer part
+        
+        private final int p1; //Product part of 2*sqrt(n). p1 = 2 here
+        
+        private final int r1; //Base of the root, for example sqrt(2), r1 = 2
+        
+        
+        
+        public IntegerExtension(int a, int b, int c){
+            
+            this.i1 = a;
+            
+            this.p1 = b;
+            
+            this.r1 = c;
+            
+        }
+        
+        public int floor(){
+            
+            return i1 + p1* (int) Math.sqrt(r1);
+            
+        }
+        
+        public IntegerExtension getConjugate(){
+            
+            return new IntegerExtension(-i1,p1,r1);
+        
+        }
+        
+        public IntegerExtension add(final IntegerExtension int1, final IntegerExtension int2){
+            
+            return new IntegerExtension(int1.i1 + int2.i1, int1.p1 + int2.p1, int1.r1);
+            
+        }
+        public IntegerExtension add(final IntegerExtension int1){
+            
+            return add(this,int1);
+            
+        }
+        
+        public IntegerExtension add(final IntegerExtension int1, final int int2){
+            
+            return new IntegerExtension(int1.i1 + int2, int1.p1, int1.r1);
+            
+        }
+        public IntegerExtension add(final int int2){
+            
+            return add(this,int2);
+            
+        }
+        
+        public IntegerExtension subtract(final IntegerExtension int1, final int int2){
+            
+            return new IntegerExtension(int1.i1 - int2, int1.p1, int1.r1);
+            
+        }
+        public IntegerExtension subtract(final int int2){
+            
+            return subtract(this,int2);
+            
+        }
+        
+        public IntegerExtension multiply(final IntegerExtension int1, final IntegerExtension int2){
+            
+            int IntPart = int1.i1*int2.i1 + int1.p1*int2.p1*int1.r1;
+            
+            int ProductPart = int1.i1*int2.p1 + int1.p1*int2.i1;
+            
+            return new IntegerExtension(IntPart,ProductPart,int1.r1);
+            
+        }
+        public IntegerExtension multiply(final IntegerExtension int1){
+            
+            return multiply(this,int1);
+            
+        }
+        
+        public IntegerExtension divide(final IntegerExtension int1, int i){
+            
+            return new IntegerExtension(int1.i1/i, int1.p1/i, int1.r1);
+            
+        }
+        public IntegerExtension divide(int i){
+            return divide(this,i);
+        }
+        
+        public int getIntegerPart(final IntegerExtension int1){
+            
+            return int1.i1;
+            
+        }
+        public int getIntegerPart(){
+            
+            return getIntegerPart(this);
+            
+        }
+        
+        public int getProductPart(final IntegerExtension int1){
+            
+            return int1.p1;
+            
+        }
+        public int getProductPart(){
+            
+            return getProductPart(this);
+            
+        }
+
+        @Override
+        public String toString(){
+            
+            final StringBuilder s = new StringBuilder();
+            
+            s.append(i1).append("+").append(p1).append("sqrt(").append(r1).append(")");
+            
+            return s.toString();
+            
+        }
+        
+    }
+    
+    public static int gcd(int a, int b) {
+        
+        if (b==0) return a;
+        
+        return gcd(b,a%b);
+    }
+}
